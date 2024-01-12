@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../colors/colors.dart';
+
 class LoginScreen extends StatefulWidget {
   static const String routeName = 'login';
 
@@ -15,7 +17,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   double screenHeight = 0;
   double screenWidth = 0;
-  Color primary = const Color(0xffeef444c);
   var iDController = TextEditingController();
   var passwordController = TextEditingController();
   late SharedPreferences sharedPreferences;
@@ -39,9 +40,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               child: Center(
-                child: Icon(
-                  Icons.person,
-                  size: screenWidth / 5,
+                child: ImageIcon(
+                  AssetImage("assets/images/logo.png"),
+                  size: screenWidth * 50,
                   color: Colors.white,
                 ),
               ),

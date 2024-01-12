@@ -1,6 +1,10 @@
+import 'package:attendance/colors/colors.dart';
+import 'package:attendance/models/user_model.dart';
 import 'package:attendance/screens/check_screen.dart';
 import 'package:attendance/screens/history_screen.dart';
 import 'package:attendance/screens/user_screen.dart';
+import 'package:attendance/services/location_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -17,12 +21,42 @@ class _HomeScreenState extends State<HomeScreen> {
   double screenHeight = 0;
   double screenWidth = 0;
   int currentIndex = 1;
-  Color primary = const Color(0xffeef444c);
   List<IconData> navIcons = [
     FontAwesomeIcons.calendar,
     FontAwesomeIcons.check,
     FontAwesomeIcons.user
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _startLocationService();
+    getID();
+  }
+
+  void _startLocationService() async {
+    LocationService().initialize();
+    LocationService().getLatitude().then((value) {
+      setState(() {
+        User.lat = value!;
+      });
+    });
+    LocationService().getLongitude().then((value) {
+      setState(() {
+        User.long = value!;
+      });
+    });
+  }
+
+  void getID() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection("Employee")
+        .where("id", isEqualTo: User.employeeID)
+        .get();
+    setState(() {
+      User.id = snapshot.docs[0].id;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: InkWell(
                     overlayColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.transparent),
+                            (states) => Colors.transparent),
                     onTap: () {
                       setState(() {
                         currentIndex = i;
@@ -77,14 +111,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           i == currentIndex
                               ? Container(
-                                  margin: const EdgeInsets.only(top: 6),
-                                  height: 3,
-                                  width: 30,
-                                  decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(40)),
-                                      color: primary),
-                                )
+                            margin: const EdgeInsets.only(top: 6),
+                            height: 3,
+                            width: 30,
+                            decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(40)),
+                                color: primary),
+                          )
                               : const SizedBox(),
                         ],
                       ),
@@ -99,5 +133,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  List<Widget> screens = [HistoryScreen(), CheckScreen(), UserScreen()];
+  List<Widget> screens = [
+    const HistoryScreen(),
+    const CheckScreen(),
+    const UserScreen()
+  ];
 }

@@ -3,6 +3,7 @@ import 'package:attendance/screens/home_screen.dart';
 import 'package:attendance/screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 
 import 'firebase_options.dart';
 
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(useMaterial3: false),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [MonthYearPickerLocalizations.delegate],
       initialRoute: AutoLogin.routeName,
       routes: {
         LoginScreen.routeName: (context) => const LoginScreen(),
