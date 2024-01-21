@@ -4,6 +4,7 @@ import 'package:attendance/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 
@@ -31,11 +32,12 @@ class _CheckScreenState extends State<CheckScreen> {
   }
 
   void _getLocation() async {
-    List<Placemark> p = await placemarkFromCoordinates(User.lat, User.long);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    List<Placemark> p =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
     setState(() {
       location = "${p[0].street}, ${p[0].administrativeArea},${p[0].country},";
-      print(User.lat);
-      print(User.long);
     });
   }
 
@@ -241,7 +243,8 @@ class _CheckScreenState extends State<CheckScreen> {
                           textColor: Colors.black54,
                           key: key,
                           onSubmit: () async {
-                            Timer(const Duration(seconds: 3), () async {
+                            key.currentState?.reset();
+                            Timer(const Duration(seconds: 2), () async {
                               _getLocation();
                               QuerySnapshot snap = await FirebaseFirestore
                                   .instance
@@ -295,7 +298,6 @@ class _CheckScreenState extends State<CheckScreen> {
                                   'checkOut': '--/--',
                                   'checkInLocation': location
                                 });
-                                key.currentState?.reset();
                               }
                             });
                           });
@@ -309,14 +311,29 @@ class _CheckScreenState extends State<CheckScreen> {
                       fontFamily: 'Nexa Bold 650',
                     ),
                   ),
-            SizedBox(height: screenHeight / 50),
+            SizedBox(height: screenHeight / 15),
             location != ""
-                ? Text(
-                    "location: $location",
-                    style: TextStyle(
-                      fontSize: screenWidth / 20,
-                      color: Colors.black54,
-                      fontFamily: 'Nexa Bold 650',
+                ? Container(
+                    padding: EdgeInsets.all(screenWidth / 25),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: Offset(2, 2)),
+                      ],
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      "location: $location",
+                      style: TextStyle(
+                        fontSize: screenWidth / 20,
+                        color: Colors.black54,
+                        fontFamily: 'Nexa Bold 650',
+                      ),
                     ),
                   )
                 : const SizedBox(),
