@@ -15,9 +15,6 @@ Widget textField(BuildContext context,
           ),
         ),
       ),
-      SizedBox(
-        height: MediaQuery.of(context).size.height / 120,
-      ),
       TextFormField(
         cursorColor: Colors.black54,
         decoration: InputDecoration(

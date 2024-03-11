@@ -96,7 +96,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection("Employee")
-                  .doc(User.id)
+                  .doc(UserModel.id ?? 'No data')
                   .collection("Record")
                   .snapshots(),
               builder: (context, snapshot) {

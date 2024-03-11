@@ -1,3 +1,4 @@
+import 'package:attendance/models/user_model.dart';
 import 'package:attendance/screens/home_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Center(
                 child: ImageIcon(
-                  AssetImage("assets/images/logo.png"),
+                  const AssetImage("assets/images/logo.png"),
                   size: screenWidth * 50,
                   color: Colors.white,
                 ),
@@ -124,6 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               sharedPreferences
                                   .setString('employeeId', id)
                                   .then((_) {
+                                UserModel.id = id;
+                                UserModel.employeeID = id;
                                 Navigator.pushReplacementNamed(
                                   context,
                                   HomeScreen.routeName,

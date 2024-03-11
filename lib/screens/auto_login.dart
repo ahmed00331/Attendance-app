@@ -29,7 +29,7 @@ class _AutoLoginState extends State<AutoLogin> {
 
     try {
       if (sharedPreferences.getString("employeeId") != null) {
-        User.employeeID = sharedPreferences.getString("employeeId")!;
+        UserModel.employeeID = sharedPreferences.getString("employeeId")!;
         setState(() {
           userAvailable = true;
         });

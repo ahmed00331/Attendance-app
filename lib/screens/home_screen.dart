@@ -30,20 +30,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _startLocationService();
     getID();
+    _startLocationService();
   }
 
   void _startLocationService() async {
     LocationService().initialize();
     LocationService().getLatitude().then((value) {
       setState(() {
-        User.lat = value!;
+        UserModel.lat = value!;
       });
     });
     LocationService().getLongitude().then((value) {
       setState(() {
-        User.long = value!;
+        UserModel.long = value!;
       });
     });
   }
@@ -51,11 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void getID() async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection("Employee")
-        .where("id", isEqualTo: User.employeeID)
+        .where("id", isEqualTo: UserModel.employeeID)
         .get();
-    setState(() {
-      User.id = snapshot.docs[0].id;
-    });
+    UserModel.id = snapshot.docs[0].id;
   }
 
   @override
