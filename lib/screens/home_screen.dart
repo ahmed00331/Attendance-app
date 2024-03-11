@@ -7,6 +7,7 @@ import 'package:attendance/services/location_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = 'home';
@@ -36,16 +37,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _startLocationService() async {
     LocationService().initialize();
-    LocationService().getLatitude().then((value) {
-      setState(() {
-        UserModel.lat = value!;
-      });
-    });
-    LocationService().getLongitude().then((value) {
-      setState(() {
-        UserModel.long = value!;
-      });
-    });
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best);
+    UserModel.lat = position.latitude;
+    UserModel.long = position.longitude;
   }
 
   void getID() async {

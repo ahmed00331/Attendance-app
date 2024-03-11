@@ -65,7 +65,7 @@ class _CheckScreenState extends State<CheckScreen> {
     UserModel.lat = position.latitude;
     UserModel.long = position.longitude;
     List<Placemark> p =
-        await placemarkFromCoordinates(UserModel.lat ?? 0, UserModel.long ?? 0);
+        await placemarkFromCoordinates(UserModel.lat, UserModel.long);
     Placemark place = p[0];
     setState(() {
       location =
@@ -297,7 +297,6 @@ class _CheckScreenState extends State<CheckScreen> {
                         textColor: Colors.black54,
                         key: key,
                         onSubmit: () async {
-                          if (UserModel.lat != 0) {
                             _getLocation();
                             QuerySnapshot snap = await FirebaseFirestore
                                 .instance
@@ -351,67 +350,6 @@ class _CheckScreenState extends State<CheckScreen> {
                                 'checkInLocation': location
                               });
                             }
-                            // key.currentState!.reset();
-                          } else {
-                            Timer(const Duration(seconds: 3), () async {
-                              _getLocation();
-
-                              QuerySnapshot snap = await FirebaseFirestore
-                                  .instance
-                                  .collection("Employee")
-                                  .where("id", isEqualTo: UserModel.employeeID)
-                                  .get();
-
-                              DocumentSnapshot snap2 = await FirebaseFirestore
-                                  .instance
-                                  .collection("Employee")
-                                  .doc(snap.docs[0].id)
-                                  .collection("Record")
-                                  .doc(DateFormat('dd MMM yyy')
-                                      .format(DateTime.now()))
-                                  .get();
-
-                              try {
-                                String checkIn = snap2["checkIn"];
-                                setState(() {
-                                  checkOut = DateFormat('hh:mm a')
-                                      .format(DateTime.now());
-                                });
-                                await FirebaseFirestore.instance
-                                    .collection("Employee")
-                                    .doc(snap.docs[0].id)
-                                    .collection("Record")
-                                    .doc(DateFormat('dd MMM yyy')
-                                        .format(DateTime.now()))
-                                    .update({
-                                  'date': Timestamp.now(),
-                                  'checkIn': checkIn,
-                                  'checkOut': DateFormat('hh:mm a')
-                                      .format(DateTime.now()),
-                                  'checkOutLocation': location
-                                });
-                              } catch (e) {
-                                setState(() {
-                                  checkIn = DateFormat('hh:mm a')
-                                      .format(DateTime.now());
-                                });
-                                await FirebaseFirestore.instance
-                                    .collection("Employee")
-                                    .doc(snap.docs[0].id)
-                                    .collection("Record")
-                                    .doc(DateFormat('dd MMM yyy')
-                                        .format(DateTime.now()))
-                                    .set({
-                                  'date': Timestamp.now(),
-                                  'checkIn': DateFormat('hh:mm a')
-                                      .format(DateTime.now()),
-                                  'checkOut': '--/--',
-                                  'checkInLocation': location
-                                });
-                              }
-                              key.currentState!.reset();
-                            });
-                          }
                         },
                       );
                     },
