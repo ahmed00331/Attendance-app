@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 Widget textField(BuildContext context,
-    {required String hint, required String title}) {
+    {required String hint,
+    required String title,
+    required TextEditingController controller}) {
   return Column(
     children: [
       Align(
@@ -16,6 +18,7 @@ Widget textField(BuildContext context,
         ),
       ),
       TextFormField(
+        controller: controller,
         cursorColor: Colors.black54,
         decoration: InputDecoration(
           hintText: hint,

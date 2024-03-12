@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:attendance/colors/colors.dart';
 import 'package:attendance/models/user_model.dart';
-import 'package:attendance/screens/widegts/defukt_form_field.dart';
+import 'package:attendance/screens/widegts/defult_form_field.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class UserScreen extends StatefulWidget {
@@ -15,6 +21,31 @@ class _UserScreenState extends State<UserScreen> {
   double screenHeight = 0;
   double screenWidth = 0;
   String birth = 'Date Of Birth';
+  var firstNameController = TextEditingController();
+  var lastNameController = TextEditingController();
+  var addressController = TextEditingController();
+
+  void uploadImage() async {
+    final image = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxHeight: 512,
+      maxWidth: 512,
+      imageQuality: 90,
+    );
+    var reference = FirebaseStorage.instance
+        .ref()
+        .child('${UserModel.employeeID?.toLowerCase()}-profilePic.jpg');
+    await reference.putFile(File(image!.path));
+    reference.getDownloadURL().then((value) async {
+      setState(() {
+        UserModel.profilePicLink = value;
+      });
+      await FirebaseFirestore.instance
+          .collection("Employee")
+          .doc(UserModel.id)
+          .update({'profilePic': UserModel.profilePicLink});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,20 +57,29 @@ class _UserScreenState extends State<UserScreen> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              Container(
-                alignment: Alignment.center,
-                margin: EdgeInsets.only(
-                    top: screenHeight / 25, bottom: screenHeight / 60),
-                height: 120,
-                width: 120,
-                decoration: BoxDecoration(
-                    color: primary, borderRadius: BorderRadius.circular(20)),
-                child: Center(
-                  child: Icon(
-                    Icons.person,
-                    size: screenWidth / 5,
-                    color: Colors.white,
-                  ),
+              InkWell(
+                onTap: () {
+                  uploadImage();
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.only(
+                      top: screenHeight / 25, bottom: screenHeight / 60),
+                  height: 120,
+                  width: 120,
+                  decoration: BoxDecoration(
+                      color: primary, borderRadius: BorderRadius.circular(20)),
+                  child: Center(
+                      child: UserModel.profilePicLink == null
+                          ? const Icon(
+                              Icons.person,
+                              size: 80,
+                              color: Colors.white,
+                            )
+                          : ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.network(
+                                  UserModel.profilePicLink ?? ""))),
                 ),
               ),
               Align(
@@ -53,40 +93,19 @@ class _UserScreenState extends State<UserScreen> {
               SizedBox(
                 height: screenHeight / 28,
               ),
-              textField(
-                context,
+              UserModel.canEdit
+                  ? textField(context,
                 hint: "First Name",
                 title: 'First Name',
-              ),
-              SizedBox(
-                height: screenHeight / 60,
-              ),
-              textField(
-                context,
+                      controller: firstNameController)
+                  : dataField('First Name', UserModel.firstName ?? ""),
+              UserModel.canEdit
+                  ? textField(context,
                 hint: "Last Name",
                 title: 'Last Name',
-              ),
-              SizedBox(
-                height: screenHeight / 60,
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Date Of Birth",
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontFamily: "Nexa Bold 650",
-                    fontSize: screenWidth / 25,
-                  ),
-                ),
-              ),
-              Container(
-                height: kToolbarHeight,
-                width: screenWidth,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.black54)),
-                child: InkWell(
+                      controller: lastNameController)
+                  : dataField("Last Name", UserModel.lastName ?? ''),
+              InkWell(
                   onTap: () {
                     showDatePicker(
                       context: context,
@@ -110,33 +129,53 @@ class _UserScreenState extends State<UserScreen> {
                       });
                     });
                   },
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 11),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      birth,
-                      style: const TextStyle(
-                          color: Colors.black54,
-                          fontFamily: "Nexa Bold 650",
-                          fontSize: 16),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: screenHeight / 60,
-              ),
-              textField(
-                context,
+                  child: dataField("Date of Birth", birth)),
+              UserModel.canEdit
+                  ? textField(context,
                 hint: "Address",
                 title: 'Address',
+                      controller: addressController)
+                  : dataField('Address', UserModel.address ?? ""),
+              const SizedBox(
+                height: 20,
               ),
-              SizedBox(
-                height: screenHeight / 60,
-              ),
-              InkWell(
-                onTap: () {},
-                child: Container(
+              UserModel.canEdit
+                  ? InkWell(
+                      onTap: () async {
+                        String firstName = firstNameController.text;
+                        String lastName = lastNameController.text;
+                        String birthDate = birth;
+                        String address = addressController.text;
+
+                        if (UserModel.canEdit) {
+                          if (firstName.isEmpty) {
+                            showErrorSnackBar(error: 'first name is empty');
+                          } else if (lastName.isEmpty) {
+                            showErrorSnackBar(error: 'first name is empty');
+                          } else if (birthDate.isEmpty) {
+                            showErrorSnackBar(error: 'birth date is empty');
+                          } else if (address.isEmpty) {
+                            showErrorSnackBar(error: 'address name is empty');
+                          } else {
+                            await FirebaseFirestore.instance
+                                .collection('Employee')
+                                .doc(UserModel.id)
+                                .update({
+                              'firstName': firstName,
+                              'lastName': lastName,
+                              'birthDate': birthDate,
+                              'address': address,
+                              'canEdit': false
+                            }).then((value) {
+                              UserModel.canEdit = false;
+                              setState(() {});
+                            });
+                          }
+                        } else {
+                          showErrorSnackBar(error: 'you can\t edit anymore');
+                        }
+                      },
+                      child: Container(
                   height: kToolbarHeight,
                   padding: const EdgeInsets.only(left: 11),
                   decoration: BoxDecoration(
@@ -150,11 +189,61 @@ class _UserScreenState extends State<UserScreen> {
                         fontSize: 25),
                   ),
                 ),
-              ),
+                    )
+                  : const SizedBox()
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget dataField(String title, String txt) {
+    return Column(
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Colors.black87,
+              fontFamily: "Nexa Bold 650",
+              fontSize: screenWidth / 25,
+            ),
+          ),
+        ),
+        Container(
+          height: kToolbarHeight,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(left: 11),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.circular(4)),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              txt,
+              style: const TextStyle(
+                  color: Colors.black54,
+                  fontFamily: "Nexa Bold 650",
+                  fontSize: 16),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  showErrorSnackBar({required String error}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.fixed,
+      backgroundColor: Colors.transparent,
+      content: AwesomeSnackbarContent(
+        title: 'Error!',
+        message: error,
+        contentType: ContentType.failure,
+      ),
+    ));
   }
 }

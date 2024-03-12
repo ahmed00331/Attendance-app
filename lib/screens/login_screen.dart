@@ -1,5 +1,6 @@
 import 'package:attendance/models/user_model.dart';
 import 'package:attendance/screens/home_screen.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,13 +105,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         String id = iDController.text.trim();
                         String password = passwordController.text;
                         if (id.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("ID Must Not Be Empty")));
+                          showErrorSnackBar(error: 'ID Must Not Be Empty');
                         } else if (password.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("Password Must Not Be Empty")));
+                          showErrorSnackBar(
+                              error: 'Password Must Not Be Empty');
                         } else {
                           QuerySnapshot snap = await FirebaseFirestore.instance
                               .collection("Employee")
@@ -131,11 +129,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                   HomeScreen.routeName,
                                 );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBarSuccess());
                               });
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text("Password Not Correct")));
+                              showErrorSnackBar(error: 'Password Not Correct');
                             }
                           } catch (e) {
                             String error = '';
@@ -150,8 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             }
                             if (!context.mounted) return;
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(SnackBar(content: Text(error)));
+                            showErrorSnackBar(error: error);
                           }
                         }
                       },
@@ -234,5 +231,34 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+  }
+
+  showErrorSnackBar({required String error}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.fixed,
+      backgroundColor: Colors.transparent,
+      content: AwesomeSnackbarContent(
+        title: 'Error!',
+        message: error,
+        contentType: ContentType.failure,
+      ),
+    ));
+  }
+
+  snackBarSuccess() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      /// need to set following properties for best effect of awesome_snackbar_content
+      elevation: 0,
+      behavior: SnackBarBehavior.fixed,
+      backgroundColor: Colors.transparent,
+      content: AwesomeSnackbarContent(
+        title: 'Success!',
+        message: "Successfully Logged In",
+
+        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+        contentType: ContentType.success,
+      ),
+    ));
   }
 }

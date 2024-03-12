@@ -31,8 +31,34 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getID();
-    _startLocationService();
+    getID().then((value) {
+      _getCredentials();
+      _getProfilePic();
+    });
+  }
+
+  void _getProfilePic() async {
+    var doc = await FirebaseFirestore.instance
+        .collection('Employee')
+        .doc(UserModel.id)
+        .get();
+    setState(() {
+      UserModel.profilePicLink = doc['profilePic'];
+    });
+  }
+
+  void _getCredentials() async {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('Employee')
+        .doc(UserModel.id)
+        .get();
+    setState(() {
+      UserModel.canEdit = doc['canEdit'];
+      UserModel.firstName = doc['firstName'];
+      UserModel.lastName = doc['lastName'];
+      UserModel.birthDate = doc['birthDate'];
+      UserModel.address = doc['address'];
+    });
   }
 
   void _startLocationService() async {
@@ -43,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     UserModel.long = position.longitude;
   }
 
-  void getID() async {
+  Future<void> getID() async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection("Employee")
         .where("id", isEqualTo: UserModel.employeeID)
@@ -53,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _startLocationService();
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(

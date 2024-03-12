@@ -4,8 +4,8 @@ class LocationService {
   Location location = Location();
 
   Future<void> initialize() async {
-    bool serviceEnabled;
-    PermissionStatus permissionStatus;
+    bool serviceEnabled = false;
+    PermissionStatus permissionStatus = PermissionStatus.denied;
     serviceEnabled = await location.serviceEnabled();
     if (!serviceEnabled) {
       serviceEnabled = await location.requestService();
