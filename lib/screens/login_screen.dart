@@ -123,14 +123,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               sharedPreferences
                                   .setString('employeeId', id)
                                   .then((_) {
-                                UserModel.id = id;
                                 UserModel.employeeID = id;
                                 Navigator.pushReplacementNamed(
                                   context,
                                   HomeScreen.routeName,
                                 );
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(snackBarSuccess());
                               });
                             } else {
                               showErrorSnackBar(error: 'Password Not Correct');
@@ -246,19 +243,19 @@ class _LoginScreenState extends State<LoginScreen> {
     ));
   }
 
-  snackBarSuccess() {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      /// need to set following properties for best effect of awesome_snackbar_content
-      elevation: 0,
-      behavior: SnackBarBehavior.fixed,
-      backgroundColor: Colors.transparent,
-      content: AwesomeSnackbarContent(
-        title: 'Success!',
-        message: "Successfully Logged In",
-
-        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-        contentType: ContentType.success,
-      ),
-    ));
-  }
+// snackBarSuccess() {
+//   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+//     /// need to set following properties for best effect of awesome_snackbar_content
+//     elevation: 0,
+//     behavior: SnackBarBehavior.fixed,
+//     backgroundColor: Colors.transparent,
+//     content: AwesomeSnackbarContent(
+//       title: 'Success!',
+//       message: "Successfully Logged In",
+//
+//       /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+//       contentType: ContentType.success,
+//     ),
+//   ));
+// }
 }

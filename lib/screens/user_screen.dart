@@ -2,13 +2,17 @@ import 'dart:io';
 
 import 'package:attendance/colors/colors.dart';
 import 'package:attendance/models/user_model.dart';
+import 'package:attendance/screens/widegts/custome_snack_bar.dart';
 import 'package:attendance/screens/widegts/defult_form_field.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+
+enum AppState { free, picked, cropped }
 
 class UserScreen extends StatefulWidget {
   const UserScreen({super.key});
@@ -61,26 +65,46 @@ class _UserScreenState extends State<UserScreen> {
                 onTap: () {
                   uploadImage();
                 },
-                child: Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.only(
-                      top: screenHeight / 25, bottom: screenHeight / 60),
-                  height: 120,
-                  width: 120,
-                  decoration: BoxDecoration(
-                      color: primary, borderRadius: BorderRadius.circular(20)),
-                  child: Center(
+                child: Stack(alignment: Alignment.bottomCenter, children: [
+                  CircleAvatar(
+                    radius: 70,
+                    child: Center(
                       child: UserModel.profilePicLink == null
                           ? const Icon(
                               Icons.person,
-                              size: 80,
+                              size: 40,
                               color: Colors.white,
                             )
                           : ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Image.network(
-                                  UserModel.profilePicLink ?? ""))),
-                ),
+                              borderRadius: BorderRadius.circular(70),
+                              child: CachedNetworkImage(
+                                imageUrl: UserModel.profilePicLink ??
+                                    "http://via.placeholder.com/200x150",
+                                imageBuilder: (context, imageProvider) =>
+                                    Container(
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                ),
+                                placeholder: (context, url) =>
+                                    const CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                              ),
+                            ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.camera_alt,
+                    size: 25,
+                    opticalSize: 12,
+                  ),
+                ]),
               ),
               Align(
                 alignment: Alignment.center,
@@ -95,14 +119,14 @@ class _UserScreenState extends State<UserScreen> {
               ),
               UserModel.canEdit
                   ? textField(context,
-                hint: "First Name",
-                title: 'First Name',
+                      hint: "First Name",
+                      title: 'First Name',
                       controller: firstNameController)
                   : dataField('First Name', UserModel.firstName ?? ""),
               UserModel.canEdit
                   ? textField(context,
-                hint: "Last Name",
-                title: 'Last Name',
+                      hint: "Last Name",
+                      title: 'Last Name',
                       controller: lastNameController)
                   : dataField("Last Name", UserModel.lastName ?? ''),
               InkWell(
@@ -125,15 +149,16 @@ class _UserScreenState extends State<UserScreen> {
                       },
                     ).then((value) {
                       setState(() {
-                        birth = DateFormat("MM/dd/yyy").format(value!);
+                        birth = DateFormat("dd/MM/yyy").format(value!);
                       });
                     });
                   },
-                  child: dataField("Date of Birth", birth)),
+                  child:
+                      dataField("Date of Birth", UserModel.birthDate ?? birth)),
               UserModel.canEdit
                   ? textField(context,
-                hint: "Address",
-                title: 'Address',
+                      hint: "Address",
+                      title: 'Address',
                       controller: addressController)
                   : dataField('Address', UserModel.address ?? ""),
               const SizedBox(
@@ -149,9 +174,11 @@ class _UserScreenState extends State<UserScreen> {
 
                         if (UserModel.canEdit) {
                           if (firstName.isEmpty) {
-                            showErrorSnackBar(error: 'first name is empty');
+                            showSnackBar(context,
+                                error: 'first name is empty',
+                                contentType: ContentType.failure);
                           } else if (lastName.isEmpty) {
-                            showErrorSnackBar(error: 'first name is empty');
+                            showErrorSnackBar(error: 'last name is empty');
                           } else if (birthDate.isEmpty) {
                             showErrorSnackBar(error: 'birth date is empty');
                           } else if (address.isEmpty) {
@@ -172,23 +199,24 @@ class _UserScreenState extends State<UserScreen> {
                             });
                           }
                         } else {
-                          showErrorSnackBar(error: 'you can\t edit anymore');
+                          showErrorSnackBar(error: 'you can\'t edit anymore');
                         }
                       },
                       child: Container(
-                  height: kToolbarHeight,
-                  padding: const EdgeInsets.only(left: 11),
-                  decoration: BoxDecoration(
-                      color: primary, borderRadius: BorderRadius.circular(15)),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: "Nexa Bold 650",
-                        fontSize: 25),
-                  ),
-                ),
+                        height: kToolbarHeight,
+                        padding: const EdgeInsets.only(left: 11),
+                        decoration: BoxDecoration(
+                            color: primary,
+                            borderRadius: BorderRadius.circular(15)),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Save',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: "Nexa Bold 650",
+                              fontSize: 25),
+                        ),
+                      ),
                     )
                   : const SizedBox()
             ],
@@ -218,7 +246,7 @@ class _UserScreenState extends State<UserScreen> {
           padding: const EdgeInsets.only(left: 11),
           decoration: BoxDecoration(
               border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(4)),
+              borderRadius: BorderRadius.circular(20)),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(

@@ -6,8 +6,8 @@ import 'package:attendance/screens/user_screen.dart';
 import 'package:attendance/services/location_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:molten_navigationbar_flutter/molten_navigationbar_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = 'home';
@@ -22,11 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
   double screenHeight = 0;
   double screenWidth = 0;
   int currentIndex = 1;
-  List<IconData> navIcons = [
-    FontAwesomeIcons.calendar,
-    FontAwesomeIcons.check,
-    FontAwesomeIcons.user
-  ];
 
   @override
   void initState() {
@@ -85,74 +80,59 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBody: true,
       body: screens[currentIndex],
-      bottomNavigationBar: Container(
-        height: screenHeight / 12,
-        margin: EdgeInsets.symmetric(
-            vertical: screenHeight / 40, horizontal: screenWidth / 50),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(
-            Radius.circular(40),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10,
-              offset: Offset(2, 2),
+      bottomNavigationBar: MoltenBottomNavigationBar(
+        margin: const EdgeInsets.all(10),
+        borderRaduis: const BorderRadius.all(Radius.circular(10)),
+        domeCircleSize: 70,
+        barHeight: 70,
+        domeCircleColor: primary,
+        barColor: primary,
+        selectedIndex: currentIndex,
+        onTabChange: (clickedIndex) {
+          setState(() {
+            currentIndex = clickedIndex;
+          });
+        },
+        tabs: [
+          MoltenTab(
+            icon: const Icon(Icons.calendar_month_outlined),
+            unselectedColor: Colors.white,
+            title: Container(
+              margin: const EdgeInsets.only(bottom: 5),
+              child: const Text(
+                'History',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(40),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int i = 0; i < navIcons.length; i++) ...<Expanded>{
-                Expanded(
-                  child: InkWell(
-                    overlayColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.transparent),
-                    onTap: () {
-                      setState(() {
-                        currentIndex = i;
-                      });
-                    },
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            navIcons[i],
-                            color: i == currentIndex ? primary : Colors.black45,
-                            size: i == currentIndex ? 28 : 25,
-                          ),
-                          i == currentIndex
-                              ? Container(
-                            margin: const EdgeInsets.only(top: 6),
-                            height: 3,
-                            width: 30,
-                            decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(40)),
-                                color: primary),
-                          )
-                              : const SizedBox(),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              }
-            ],
+          MoltenTab(
+            icon: const Icon(Icons.check),
+            unselectedColor: Colors.white,
+            title: Container(
+              margin: const EdgeInsets.only(bottom: 5),
+              child: const Text(
+                'Check',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
           ),
-        ),
+          MoltenTab(
+            icon: const Icon(Icons.person),
+            unselectedColor: Colors.white,
+            title: Container(
+              margin: const EdgeInsets.only(bottom: 5),
+              child: const Text(
+                'profile',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
+  //for (int i = 0; i < navIcons.length; i++) ...<Expanded>
   List<Widget> screens = [
     const HistoryScreen(),
     const CheckScreen(),

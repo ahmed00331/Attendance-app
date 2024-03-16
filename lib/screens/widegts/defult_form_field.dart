@@ -24,13 +24,15 @@ Widget textField(BuildContext context,
           hintText: hint,
           hintStyle: const TextStyle(
               color: Colors.black54, fontFamily: "Nexa Bold 650"),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: const BorderSide(
               color: Colors.black54,
             ),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: const BorderSide(
               color: Colors.black54,
             ),
           ),

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:attendance/models/user_model.dart';
 import 'package:attendance/screens/login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -91,10 +90,12 @@ class _CheckScreenState extends State<CheckScreen> {
         checkOut = snap2['checkOut'];
       });
     } catch (e) {
-      setState(() {
-        checkIn = '--/--';
-        checkOut = '--/--';
-      });
+      if (mounted) {
+        setState(() {
+          checkIn = '--/--';
+          checkOut = '--/--';
+        });
+      }
     }
   }
 
@@ -126,15 +127,11 @@ class _CheckScreenState extends State<CheckScreen> {
                   margin: EdgeInsets.only(top: screenHeight / 28),
                   child: IconButton(
                       onPressed: () async {
-                        await FirebaseAuth.instance
-                            .signOut()
-                            .then((value) async {
-                          Navigator.pushReplacementNamed(
+                        Navigator.pushReplacementNamed(
                               context, LoginScreen.routeName);
                           SharedPreferences preferences =
                               await SharedPreferences.getInstance();
                           await preferences.remove('employeeId');
-                        });
                       },
                       icon: const Icon(Icons.logout)),
                 )
@@ -153,7 +150,7 @@ class _CheckScreenState extends State<CheckScreen> {
                           color: Colors.black),
                     ),
                     TextSpan(
-                      text: "   ${UserModel.employeeID}",
+                      text: "   ${UserModel.id}",
                       style: TextStyle(
                           fontSize: screenWidth / 18,
                           fontFamily: 'Nexa Bold 650',
@@ -423,17 +420,50 @@ class _CheckScreenState extends State<CheckScreen> {
                       fontFamily: 'Nexa Bold 650',
                     ),
                   ),
-            SizedBox(height: screenHeight / 50),
-            location != ""
-                ? Text(
+            SizedBox(height: screenHeight / 16),
+            if (location != "")
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 5,
+                        offset: Offset(1, 1)),
+                  ],
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(20),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text(
                     "location: $location",
                     style: TextStyle(
                       fontSize: screenWidth / 20,
                       color: Colors.black54,
                       fontFamily: 'Nexa Bold 650',
                     ),
-                  )
-                : Text(
+                  ),
+                ),
+              )
+            else
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 5,
+                        offset: Offset(1, 1)),
+                  ],
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(20),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text(
                     "last location: $locationCache",
                     style: TextStyle(
                       fontSize: screenWidth / 20,
@@ -441,6 +471,8 @@ class _CheckScreenState extends State<CheckScreen> {
                       fontFamily: 'Nexa Bold 650',
                     ),
                   ),
+                ),
+              ),
           ],
         ));
   }
